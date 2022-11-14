@@ -55,7 +55,7 @@ public:
         processPPM();
         //delay(10);
         //processDriveMotors(ppmch[0],ppmch[1],ppmch[2]);
-        processLiftMotors(ppmch[5]);
+        processLiftMotors(ppmch[5],ppmch[4]);
         processHeadMotors(ppmch[2],ppmch[3],ppmch[1]);
     }
 
@@ -80,16 +80,20 @@ public:
         };
     }
 
-    void processLiftMotors(int inputch = -1)
+    void processLiftMotors(int l,int h)
     {
-        int input = constrain(map(inputch,600,1600,0,180),0,180);
+        int inputLift = constrain(map(l,600,1600,0,180),0,180);
+        int inputHead = constrain(map(h,600,1600,0,180),0,180);
         int LowerLiftPos = servos[TORSO_MOTOR_LOWERLIFT];
         int UpperLiftPos = servos[TORSO_MOTOR_UPPERLIFT];
+        int HeadLiftPos = servos[HEAD_MOTOR_LIFT];
 
-        LowerLiftPos = constrain(LowerLiftPos + (input - LowerLiftPos) * SMOOTHING,0,180);
+        LowerLiftPos = constrain(LowerLiftPos + (inputLift - LowerLiftPos) * SMOOTHING,0,180);
+        HeadLiftPos = constrain(HeadLiftPos + (inputHead - HeadLiftPos) * SMOOTHING,0,180);
 
         servos[TORSO_MOTOR_LOWERLIFT] = LowerLiftPos;
         servos[TORSO_MOTOR_UPPERLIFT] = 180 - LowerLiftPos;
+        servos[HEAD_MOTOR_LIFT] = HeadLiftPos;
     }
 
     float easeInOutExpo(float x)
