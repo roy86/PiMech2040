@@ -2,6 +2,8 @@
 #include <Servo.h>
 #include <math.h>
 
+//#define DEBUG_PPM
+
 #ifndef PPM_CHs
 #define PPM_CHs 8 // How many channels have your radio (max 8 PPM)
 #endif
@@ -35,49 +37,245 @@
 #define HEAD_MOTOR_NECKR        0x12
 #define HEAD_MOTOR_TURN         0x13
 
+#define DRIVE_MOTOR_X           0x00
+#define DRIVE_MOTOR_Y           0x03
+#define DRIVE_MOTOR_Z           0x08
+
 class GroundMechB2 {
 public:
-    GroundMechB2() {
+    GroundMechB2()
+    {
+        //
     }
 
     void begin()
     {
         Serial.begin(9600);
         Serial.println("INIT B2 Groundmech Completed");
-        pinMode(PPM_PIN,INPUT);
+        pinMode(PPM_PIN,INPUT_PULLUP);
 
         for (int i=0;i<4;i++){emote[i]=0;};
         for (int i=0;i<19;i++){servos[i]=0;};
+        mecanumMode=0;
     }
 
     void update()
     {
         processPPM();
-        //delay(10);
-        //processDriveMotors(ppmch[0],ppmch[1],ppmch[2]);
+        if (mecanumMode > 0)
+        {
+            processDriveMotors(ppmch[0],ppmch[1],ppmch[3],mecanumMode < 2);
+        }
+        else
+        {
+            processDriveMotors(ppmch[0],ppmch[1],ppmch[3]);
+        }
         processLiftMotors(ppmch[5],ppmch[4]);
         processHeadMotors(ppmch[2],ppmch[3],ppmch[1]);
     }
 
+    void setMecanum(int mechstate)
+    {
+        mecanumMode = mechstate;
+    };
+
+    /*-------------------------------------------------------- /
+    /  Easing Functions - https://github.com/ai/easings.net    /
+    / --------------------------------------------------------*/
+
+    float easeInSine(float x) {
+        return 1 - cos((x * 3.14159) / 2);
+    }
+
+    float easeOutSine(float x) {
+        return sin((x * 3.14159) / 2);
+    }
+
+    float easeInOutSine(float x) {
+        return -(cos(3.14159 * x) - 1) / 2;
+    }
+
+    float easeInQuad(float x) {
+        return x * x;
+    }
+
+    float easeOutQuad(float x) {
+        return 1 - (1 - x) * (1 - x);
+    }
+
+    float easeInOutQuad(float x) {
+        return x < 0.5 ? 2 * x * x : 1 - pow(-2 * x + 2, 2) / 2;
+    }
+
+    float easeInCubic(float x) {
+        return x * x * x;
+    }
+
+    float easeOutCubic(float x) {
+        return 1 - pow(1 - x, 3);
+    }
+
+    float easeInOutCubic(float x) {
+        return x < 0.5 ? 4 * x * x * x : 1 - pow(-2 * x + 2, 3) / 2;
+    }
+
+    float easeInQuart(float x) {
+        return x * x * x * x;
+    }
+
+    float easeOutQuart(float x) {
+        return 1 - pow(1 - x, 4);
+    }
+
+    float easeInOutQuart(float x) {
+        return x < 0.5 ? 8 * x * x * x * x : 1 - pow(-2 * x + 2, 4) / 2;
+    }
+
+    float easeInQuint(float x) {
+        return x * x * x * x * x;
+    }
+
+    float easeOutQuint(float x) {
+        return 1 - pow(1 - x, 5);
+    }
+
+    float easeInOutQuint(float x) {
+        return x < 0.5 ? 16 * x * x * x * x * x : 1 - pow(-2 * x + 2, 5) / 2;
+    }
+
+    float easeInExpo(float x) {
+        return x == 0 ? 0 : pow(2, 10 * x - 10);
+    }
+
+    float easeOutExpo(float x) {
+        return x == 1 ? 1 : 1 - pow(2, -10 * x);
+    }
+
+    float easeInOutExpo(float x) {
+        return x == 0
+            ? 0 : x == 1
+            ? 1 : x < 0.5
+            ? pow(2, 20 * x - 10) / 2 : (2 - pow(2, -20 * x + 10)) / 2;
+    }
+
+    float easeInCirc(float x) {
+        return 1 - sqrt(1 - pow(x, 2));
+    }
+
+    float easeOutCirc(float x) {
+        return sqrt(1 - pow(x - 1, 2));
+    }
+
+    float easeInOutCirc(float x) {
+        return x < 0.5
+            ? (1 - sqrt(1 - pow(2 * x, 2))) / 2
+            : (sqrt(1 - pow(-2 * x + 2, 2)) + 1) / 2;
+    }
+
+    float easeInBounce(float x) {
+        return 1 - easeOutBounce(1 - x);
+    }
+
+    float easeOutBounce(float x) {
+        float n1 = 7.5625;
+        float d1 = 2.75;
+        if (x < 1 / d1) {
+            return n1 * x * x;
+        } else if (x < 2 / d1) {
+            return n1 * (x -= 1.5 / d1) * x + 0.75;
+        } else if (x < 2.5 / d1) {
+            return n1 * (x -= 2.25 / d1) * x + 0.9375;
+        } else {
+            return n1 * (x -= 2.625 / d1) * x + 0.984375;
+        }
+    }
+
+    float easeInOutBounce(float x) {
+        return x < 0.5
+            ? (1 - easeOutBounce(1 - 2 * x)) / 2
+            : (1 + easeOutBounce(2 * x - 1)) / 2;
+    }
+
+    /*-------------------------------------------------------- /
+    /  Input Functions                                         /
+    / --------------------------------------------------------*/
+
     void processPPM()
     {
-        if(pulseIn(PPM_PIN, HIGH) > 4000) //If pulse > 4 miliseconds, continues
+        int ppmInit = pulseIn(PPM_PIN, HIGH);
+        if(ppmInit > 4000) //If pulse > 4 miliseconds, continues
         {
             for(int i = 0; i < PPM_CHs; i++) //Read the pulses of the remainig channels
             {
                 ppmch[i]=pulseIn(PPM_PIN, HIGH);
             }
-
-            // for(int i = 0; i < PPM_CHs; i++) //Prints all the values readed
-            // {
-            //     Serial.print("CH"); //Channel
-            //     Serial.print(i); //Channel number
-            //     Serial.print(":"); Serial.print(ppmch[i]); //Print the value
-            //     Serial.print(" "); 
-            // }
-            // Serial.println(";");
-            delay(10); //Give time to print values.
+            #ifdef DEBUG_PPM
+            Serial.print("CHi:"); //Channel
+            Serial.print(ppmInit); //Print the value
+            Serial.print("\t"); 
+            for(int i = 0; i < PPM_CHs; i++) //Prints all the values readed
+            {
+                Serial.print("CH"); //Channel
+                Serial.print(i); //Channel number
+                Serial.print(":"); Serial.print(ppmch[i]); //Print the value
+                Serial.print("\t"); 
+            }
+            Serial.println(";");
+            //delay(10); //Give time to print values.
+            #endif
         };
+    }
+
+    /*-------------------------------------------------------- /
+    /  Servo Position Functions                                /
+    / --------------------------------------------------------*/
+
+    void processDriveMotors(int x, int y, int z,bool remap)
+    {
+        if (!remap)
+        {
+            servos[DRIVE_MOTOR_X] = x;
+            servos[DRIVE_MOTOR_Y] = y;
+            servos[DRIVE_MOTOR_Z] = z;
+        }
+        else
+        {
+            servos[DRIVE_MOTOR_X] = constrain(map(x,600,1600,0,180),0,180);
+            servos[DRIVE_MOTOR_Y] = constrain(map(y,600,1600,0,180),0,180);
+            servos[DRIVE_MOTOR_Z] = constrain(map(z,600,1600,0,180),0,180);
+        }
+    }
+
+    void processDriveMotors(int x, int y, int z)
+    {
+        int inputX = constrain(map(x,600,1600,-90,90),-90,90);
+        int inputY = constrain(map(y,600,1600,-90,90),-90,90);
+        int inputZ = constrain(map(z,600,1600,-90,90),-90,90);
+
+        int motorFL = servos[DRIVE_MOTOR_FRONTLEFT];
+        int motorFR = servos[DRIVE_MOTOR_FRONTRIGHT];
+        int motorRL = servos[DRIVE_MOTOR_REARLEFT];
+        int motorRR = servos[DRIVE_MOTOR_REARRIGHT];
+
+        motorFL = constrain(motorFL + (inputX - motorFL),-90,90);
+        motorFR = constrain(motorFR + (inputX - motorFR),-90,90);
+        motorRL = constrain(motorRL + (inputX - motorRL),-90,90);
+        motorRR = constrain(motorRR + (inputX - motorRR),-90,90);
+
+        motorFL = constrain(motorFL + inputY,-90,90);
+        motorFR = constrain(motorFR - inputY,-90,90);
+        motorRL = constrain(motorRL - inputY,-90,90);
+        motorRR = constrain(motorRR + inputY,-90,90);
+
+        motorFL = constrain(motorFL + inputZ,-90,90);
+        motorFR = constrain(motorFR - inputZ,-90,90);
+        motorRL = constrain(motorRL + inputZ,-90,90);
+        motorRR = constrain(motorRR - inputZ,-90,90);
+
+        servos[DRIVE_MOTOR_FRONTLEFT] = constrain(map(motorFL,-90,90,0,180),0,180);
+        servos[DRIVE_MOTOR_FRONTRIGHT] = constrain(map(motorFR,-90,90,0,180),0,180);
+        servos[DRIVE_MOTOR_REARLEFT] = constrain(map(motorRL,-90,90,0,180),0,180);
+        servos[DRIVE_MOTOR_REARRIGHT] = constrain(map(motorRR,-90,90,0,180),0,180);
     }
 
     void processLiftMotors(int l,int h)
@@ -94,40 +292,6 @@ public:
         servos[TORSO_MOTOR_LOWERLIFT] = LowerLiftPos;
         servos[TORSO_MOTOR_UPPERLIFT] = 180 - LowerLiftPos;
         servos[HEAD_MOTOR_LIFT] = HeadLiftPos;
-    }
-
-    float easeInOutExpo(float x)
-    {
-        return x == 0 ? 0 : x == 1
-            ? 1 : x < 0.5
-            ? pow(2, 20 * x - 10) / 2
-            : (2 - pow(2, -20 * x + 10)) / 2;
-    }
-
-    float easeInOutQuint(float x)
-    {
-        return x < 0.5 ? 16.00 * x * x * x * x * x : 1.00 - pow(-2 * x + 2, 5) / 2;
-    }
-
-    float easeOutBounce(float x) {
-        float n1 = 7.5625;
-        float d1 = 2.75;
-
-        if (x < 1 / d1) {
-            return n1 * x * x;
-        } else if (x < 2 / d1) {
-            return n1 * (x -= 1.5 / d1) * x + 0.75;
-        } else if (x < 2.5 / d1) {
-            return n1 * (x -= 2.25 / d1) * x + 0.9375;
-        } else {
-            return n1 * (x -= 2.625 / d1) * x + 0.984375;
-        }
-    }
-
-    float easeInOutBounce(float x) {
-        return x < 0.5
-            ? (1 - easeOutBounce(1 - 2 * x)) / 2
-            : (1 + easeOutBounce(2 * x - 1)) / 2;
     }
 
     void processHeadMotors(int x,int y,int z)
@@ -151,11 +315,6 @@ public:
         servos[HEAD_MOTOR_NECKL] = NeckLPos;
         servos[HEAD_MOTOR_NECKR] = NeckRPos;
         servos[HEAD_MOTOR_TURN] = TurnPos;
-
-        //Serial.print("z:"); Serial.print(z); Serial.print(" ");
-        //Serial.print("inputZ:"); Serial.print(inputZ); Serial.print(" ");
-        //Serial.print("TurnPos:"); Serial.print(TurnPos); Serial.print(" ");
-        //Serial.println(";");
     }
 
     int getServoPos(int sid)
@@ -178,5 +337,6 @@ public:
 private:
     int emote[4];
     int ppmch[PPM_CHs];
-    int servos[19];
+    int servos[20];
+    int mecanumMode;
 };
