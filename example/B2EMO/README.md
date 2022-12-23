@@ -12,12 +12,13 @@ https://github.com/RadekVoltr/RP2040PioServos
 4. Upload Sketch
 
 # Transmitter Channels
-Drive Mode:
+## Drive Mode:
 1. FWD/BKWD
 2. STRAFE
 3. -
 4. Turn
-Stationary Mode
+
+## Stationary Mode
 1. -
 2. Head Turn
 3. Head Pitch
