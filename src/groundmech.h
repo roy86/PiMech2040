@@ -72,16 +72,18 @@ public:
             #endif
         }else{
             ppmOut++;
-            if (ppmOut>1000)
+            if (ppmOut>2)
             {
                 for(int i = 0; i < PPM_CHs; i++)
                 {
                     ppmch[i]=0;
                 }
             }
-            //Serial.print("CHi:"); //Channel
-            //Serial.print(ppmInit); //Print the value
-            //Serial.println(";");
+            Serial.print("CHi:"); //Channel
+            Serial.print(ppmInit); //Print the value
+            Serial.print("\t ppmOut:"); //Channel
+            Serial.print(ppmOut); //Print the value
+            Serial.println(";");
         };
     };
 
