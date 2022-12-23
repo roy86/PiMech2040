@@ -45,11 +45,13 @@ public:
     int getServoPos(int servoID);
 
     int ppmch[PPM_CHs];
+    int ppmOut=0;
     void PPMinit(void);
     void PPMupdate(void) {
         int ppmInit = pulseIn(PPM_PIN, HIGH);
         if(ppmInit > 4000) //If pulse > 4 miliseconds, continues
         {
+            ppmOut = 0;
             for(int i = 0; i < PPM_CHs; i++) //Read the pulses of the remainig channels
             {
                 ppmch[i]=pulseIn(PPM_PIN, HIGH);
@@ -69,6 +71,14 @@ public:
             //delay(10); //Give time to print values.
             #endif
         }else{
+            ppmOut++;
+            if (ppmOut>1000)
+            {
+                for(int i = 0; i < PPM_CHs; i++)
+                {
+                    ppmch[i]=0;
+                }
+            }
             //Serial.print("CHi:"); //Channel
             //Serial.print(ppmInit); //Print the value
             //Serial.println(";");
