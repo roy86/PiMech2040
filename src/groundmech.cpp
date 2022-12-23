@@ -101,7 +101,7 @@ void Groundmech::loop(void)
         updateState(mechStateN);
     }
 
-    if (millis() > lastIdleMovement && mechState == 4)
+    if (millis() > lastIdleMovement && mechState == 1)
     {
         lastIdleMovement = millis() + 8000;
         setServoPos(1,random(1000,2000));

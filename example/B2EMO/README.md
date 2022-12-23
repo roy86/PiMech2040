@@ -25,4 +25,4 @@ https://github.com/RadekVoltr/RP2040PioServos
 4. Head Roll 
 
 All Modes
-5. Mode Select (Binary) Low: Stationary, High: Drive
+5. Mode Select (Three Position) Low: Stationary Still, Medium: Stationary Animate, High: Drive Mode
