@@ -1,4 +1,5 @@
 #include "B2.h"
+#include <groundmech.h>
 
 #ifndef PPM_CHs
 #define PPM_CHs 8 // How many channels have your radio (max 8 PPM)
@@ -67,6 +68,8 @@ void loop()
   Motor_Head_AxisL.write( B2EMO.getServoPos(HEAD_MOTOR_NECKL));
   Motor_Head_AxisR.write( B2EMO.getServoPos(HEAD_MOTOR_NECKR));
 
+  Serial.print("HD:"); Serial.print(B2EMO.getServoPos(HEAD_MOTOR_TURN)); Serial.print("\t");
+
   Motor_Head_AxisY.write( B2EMO.getServoPos(HEAD_MOTOR_TURN));
   Motor_Head_AxisL.write( B2EMO.getServoPos(HEAD_MOTOR_NECKL));
   Motor_Head_AxisR.write( B2EMO.getServoPos(HEAD_MOTOR_NECKR));
@@ -82,9 +85,9 @@ void loop()
   Motor_Drive_RR.write(B2EMO.getServoPos(DRIVE_MOTOR_REARRIGHT));
 
   // Debugging
-  //Serial.print("FL:"); Serial.print(B2EMO.getServoPos(DRIVE_MOTOR_FRONTLEFT)); Serial.print("\t");
-  //Serial.print("FR:"); Serial.print(B2EMO.getServoPos(DRIVE_MOTOR_FRONTRIGHT)); Serial.print("\t");
-  //Serial.print("RL:"); Serial.print(B2EMO.getServoPos(DRIVE_MOTOR_REARLEFT)); Serial.print("\t");
-  //Serial.print("RR:"); Serial.print(B2EMO.getServoPos(DRIVE_MOTOR_REARRIGHT)); Serial.println("\t");
+  Serial.print("FL:"); Serial.print(B2EMO.getServoPos(DRIVE_MOTOR_FRONTLEFT)); Serial.print("\t");
+  Serial.print("FR:"); Serial.print(B2EMO.getServoPos(DRIVE_MOTOR_FRONTRIGHT)); Serial.print("\t");
+  Serial.print("RL:"); Serial.print(B2EMO.getServoPos(DRIVE_MOTOR_REARLEFT)); Serial.print("\t");
+  Serial.print("RR:"); Serial.print(B2EMO.getServoPos(DRIVE_MOTOR_REARRIGHT)); Serial.println("\t");
 }
 
