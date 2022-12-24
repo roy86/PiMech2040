@@ -114,6 +114,7 @@ private:
     // Communication Inputs
     void sbusBegin(void);
 
+    void updateHeadMotors(int pitch, int roll, int yaw);
     void updateDriveMotors(int x, int y, int z);
 
     int remoteConnected(void);

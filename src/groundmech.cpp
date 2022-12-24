@@ -112,6 +112,15 @@ void Groundmech::loop(void)
         setServoPos(6,random(1700,2500));
     }
 
+    if (mechState == 0)
+    {
+      int rasier = constrain(map(ppmch[0],600,1600,1500,2500),500,2500);
+      setServoPos(4,rasier);
+      setServoPos(5,rasier);
+      setServoPos(6,rasier);
+    }
+
+    updateHeadMotors(ppmch[2],ppmch[3],ppmch[1]);
     updateDriveMotors(ppmch[0],ppmch[1],ppmch[3]);
 }
 
@@ -147,68 +156,118 @@ void Groundmech::updateState(int state)
     }
 }
 
+void Groundmech::updateHeadMotors(int pitch, int roll, int yaw)
+{
+  if (mechState == 0x02)
+  {
+    setServoPos(1,map(yaw,600,1600,1300,1700));
+    setServoPos(2,1500);
+    setServoPos(3,1500);
+    setServoPos(4,map((pitch+roll)/2,600,1600,1300,1700));
+    return;
+  }
+
+  if (mechState == 0x01)
+  {
+    return;
+  }
+
+  if (pitch + roll + yaw < 500)
+  {
+    setServoPos(1,1500);
+    setServoPos(2,1500);
+    setServoPos(3,1500);
+    return;
+  }
+
+  int inputX = constrain(map(pitch,600,1600,-1250,1250),-1250,1250);
+  int inputY = constrain(map(roll, 600,1600,-1250,1250),-1250,1250);
+  int inputZ = constrain(map(yaw,  600,1600,-1250,1250),-1250,1250);
+
+  int TurnPos  = map(servoPos[1], getServoMin(1), getServoMax(1), 500, 2500);
+  int NeckLPos = map(servoPos[2], getServoMin(2), getServoMax(2), 500, 2500);
+  int NeckRPos = map(servoPos[3], getServoMin(3), getServoMax(3), 500, 2500);
+
+  TurnPos  = constrain((getServoMin(1) + getServoMax(1))/2 + inputZ, getServoMin(1),getServoMax(1));
+  NeckLPos = constrain((getServoMin(2) + getServoMax(2))/2 + (inputX + inputY),getServoMin(2),getServoMax(2));
+  NeckRPos = constrain((getServoMin(3) + getServoMax(3))/2 + (inputX - inputY),getServoMin(3),getServoMax(3));
+
+  //setServoPos(1,TurnPos);
+  //setServoPos(2,NeckLPos);
+  //setServoPos(3,NeckRPos);
+  servoPos[1] = constrain(TurnPos,getServoMin(1),getServoMax(1));
+  servoPosNext[1] = servoPos[1];
+  servoPosPrev[1] = servoPos[1];
+  servoPos[2] = constrain(NeckLPos,getServoMin(2),getServoMax(2));
+  servoPosNext[2] = servoPos[2];
+  servoPosPrev[2] = servoPos[2];
+  servoPos[3] = constrain(NeckRPos,getServoMin(3),getServoMax(3));
+  servoPosNext[3] = servoPos[3];
+  servoPosPrev[3] = servoPos[3];
+}
+
 void Groundmech::updateDriveMotors(int x, int y, int z)
 {
-    if (mechState != 0x02)
-    {
-        setServoPos(10,1500);
-        setServoPos(12,1500);
-        setServoPos(14,1500);
-        setServoPos(16,1500);
-        return;
-    }
+  if (mechState != 0x02)
+  {
+      setServoPos(10,1500);
+      setServoPos(12,1500);
+      setServoPos(14,1500);
+      setServoPos(16,1500);
+      return;
+  }
 
-    int inputX = constrain(map(x,600,1600,-900,900),-900,900);
-    int inputY = constrain(map(y,600,1600,-900,900),-900,900);
-    int inputZ = constrain(map(z,600,1600,-900,900),-900,900);
+  int inputX = constrain(map(x,600,1600,-900,900),-900,900);
+  int inputY = constrain(map(y,600,1600,-900,900),-900,900);
+  int inputZ = constrain(map(z,600,1600,-900,900),-900,900);
 
-    int motorFL = map(servoPos[10], getServoMin(10), getServoMax(10), -900, 900);
-    int motorFR = map(servoPos[12], getServoMin(12), getServoMax(12), -900, 900);
-    int motorRR = map(servoPos[14], getServoMin(14), getServoMax(14), -900, 900);
-    int motorRL = map(servoPos[16], getServoMin(16), getServoMax(16), -900, 900);
+  int motorFL = map(servoPos[10], getServoMin(10), getServoMax(10), -900, 900);
+  int motorFR = map(servoPos[12], getServoMin(12), getServoMax(12), -900, 900);
+  int motorRR = map(servoPos[14], getServoMin(14), getServoMax(14), -900, 900);
+  int motorRL = map(servoPos[16], getServoMin(16), getServoMax(16), -900, 900);
 
-    motorFL = constrain(motorFL + (inputX - motorFL),-900,900);
-    motorFR = constrain(motorFR + (inputX - motorFR),-900,900);
-    motorRL = constrain(motorRL + (inputX - motorRL),-900,900);
-    motorRR = constrain(motorRR + (inputX - motorRR),-900,900);
+  motorFL = constrain(motorFL + (inputX - motorFL),-900,900);
+  motorFR = constrain(motorFR + (inputX - motorFR),-900,900);
+  motorRL = constrain(motorRL + (inputX - motorRL),-900,900);
+  motorRR = constrain(motorRR + (inputX - motorRR),-900,900);
 
-    motorFL = constrain(motorFL + inputY,-900,900);
-    motorFR = constrain(motorFR - inputY,-900,900);
-    motorRL = constrain(motorRL - inputY,-900,900);
-    motorRR = constrain(motorRR + inputY,-900,900);
+  motorFL = constrain(motorFL + inputY,-900,900);
+  motorFR = constrain(motorFR - inputY,-900,900);
+  motorRL = constrain(motorRL - inputY,-900,900);
+  motorRR = constrain(motorRR + inputY,-900,900);
 
-    motorFL = constrain(motorFL + inputZ,-900,900);
-    motorFR = constrain(motorFR - inputZ,-900,900);
-    motorRL = constrain(motorRL + inputZ,-900,900);
-    motorRR = constrain(motorRR - inputZ,-900,900);
+  motorFL = constrain(motorFL + inputZ,-900,900);
+  motorFR = constrain(motorFR - inputZ,-900,900);
+  motorRL = constrain(motorRL + inputZ,-900,900);
+  motorRR = constrain(motorRR - inputZ,-900,900);
 
-    servoPos[10] = constrain(map(motorFL,-900,900,getServoMin(10),getServoMax(10)),getServoMin(10),getServoMax(10));
-    servoPosNext[10] = servoPos[10];
-    servoPosPrev[10] = servoPos[10];
-    servoPos[12] = constrain(map(motorFR,-900,900,getServoMin(12),getServoMax(12)),getServoMin(12),getServoMax(12));
-    servoPosNext[12] = servoPos[12];
-    servoPosPrev[12] = servoPos[12];
-    servoPos[14] = constrain(map(motorRR,-900,900,getServoMin(14),getServoMax(14)),getServoMin(14),getServoMax(14));
-    servoPosNext[14] = servoPos[14];
-    servoPosPrev[14] = servoPos[14];
-    servoPos[16] = constrain(map(motorRL,-900,900,getServoMin(16),getServoMax(16)),getServoMin(16),getServoMax(16));
-    servoPosNext[16] = servoPos[16];
-    servoPosPrev[16] = servoPos[16];
+  servoPos[10] = constrain(map(motorFL,-900,900,getServoMin(10),getServoMax(10)),getServoMin(10),getServoMax(10));
+  servoPosNext[10] = servoPos[10];
+  servoPosPrev[10] = servoPos[10];
+  servoPos[12] = constrain(map(motorFR,-900,900,getServoMin(12),getServoMax(12)),getServoMin(12),getServoMax(12));
+  servoPosNext[12] = servoPos[12];
+  servoPosPrev[12] = servoPos[12];
+  servoPos[14] = constrain(map(motorRR,-900,900,getServoMin(14),getServoMax(14)),getServoMin(14),getServoMax(14));
+  servoPosNext[14] = servoPos[14];
+  servoPosPrev[14] = servoPos[14];
+  servoPos[16] = constrain(map(motorRL,-900,900,getServoMin(16),getServoMax(16)),getServoMin(16),getServoMax(16));
+  servoPosNext[16] = servoPos[16];
+  servoPosPrev[16] = servoPos[16];
 
-    // setServoPos(10,constrain(map(motorFL,-900,900,500,2500),500,2500));
-    // setServoPos(12,constrain(map(motorFR,-900,900,500,2500),500,2500));
-    // setServoPos(14,constrain(map(motorRR,-900,900,500,2500),500,2500));
-    // setServoPos(16,constrain(map(motorRL,-900,900,500,2500),500,2500));
+  // setServoPos(10,constrain(map(motorFL,-900,900,500,2500),500,2500));
+  // setServoPos(12,constrain(map(motorFR,-900,900,500,2500),500,2500));
+  // setServoPos(14,constrain(map(motorRR,-900,900,500,2500),500,2500));
+  // setServoPos(16,constrain(map(motorRL,-900,900,500,2500),500,2500));
 
-    // Serial.print("motorFL:");
-    // Serial.print(servoPos[10]);
-    // Serial.print("\t motorFR:");
-    // Serial.print(servoPos[12]);
-    // Serial.print("\t  motorRR:");
-    // Serial.print(servoPos[14]);
-    // Serial.print("\t  motorRL:");
-    // Serial.print(servoPos[16]);
-    // Serial.println(";");
+  // Serial.print("motorFL:");
+  // Serial.print(servoPos[10]);
+  // Serial.print("\t motorFR:");
+  // Serial.print(servoPos[12]);
+  // Serial.print("\t  motorRR:");
+  // Serial.print(servoPos[14]);
+  // Serial.print("\t  motorRL:");
+  // Serial.print(servoPos[16]);
+  // Serial.println(";");
 }
 
 /*
@@ -229,10 +288,14 @@ int Groundmech::isServoReversed(int servoID) {
 
 void Groundmech::setServoPos(int servoID,int nextPos)
 {
-    int sMin = getServoMin(servoID);
-    int sMax = getServoMax(servoID);
-    servoPosNext[servoID] = constrain(nextPos,sMin,sMax);
-    servoPosPrev[servoID] = constrain(servoPos[servoID],sMin,sMax);
+  if (nextPos == servoPosNext[servoID])
+  {
+    return;
+  }
+  int sMin = getServoMin(servoID);
+  int sMax = getServoMax(servoID);
+  servoPosNext[servoID] = constrain(nextPos,sMin,sMax);
+  servoPosPrev[servoID] = constrain(servoPos[servoID],sMin,sMax);
 }
 
 int Groundmech::getServoPos(int servoID)
@@ -334,7 +397,6 @@ String Groundmech::getValue(String data, char separator, int index)
 /*
     Control Inputs Mapping
 */
-
 int Groundmech::remoteConnected(void) {
   return remoteData[0];
 }
