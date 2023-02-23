@@ -3,4 +3,5 @@ Put your Pico into FS / bootloader mode by holding down the BOOTSEL button whils
 
 ## Compiling and loading via Arduino IDE
 [Arduino IDE Setup](https://github.com/earlephilhower/arduino-pico#installing-via-arduino-boards-manager)
+
 [Uploading Sketches](https://github.com/earlephilhower/arduino-pico#uploading-sketches)
