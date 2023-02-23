@@ -1,0 +1,30 @@
+{
+  "name": "PiMech2040",
+  "version": "1.0.0",
+  "keywords": "device, control, pio, interrupt, isr, isr-based, mission-critical, accuracy, precise, non-blocking, mbed, rpi-pico, rp2040, nano-rp2040-connect, servo, pio",
+  "description": "RP2040 based Astromech and Groundmech Controller",
+  "authors":
+  {
+    "name":  "Alec Muir (Roy86)",
+    "url":   "https://www.roy86.com.au/pimech2040",
+    "maintainer": true
+  },   
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/roy86/PiMech2040"
+  },
+  "homepage": "https://www.roy86.com.au/pimech2040",
+  "export": {
+    "exclude": [
+      "linux",
+      "extras",
+      "tests"
+    ]
+  },
+  "license": "MIT",
+  "frameworks": "*",
+  "platforms": ["raspberrypi","raspberrypi_pico","raspberrypi_picow"],
+  "examples": "examples/*/*/*.ino",
+  "headers": [""]
+}
