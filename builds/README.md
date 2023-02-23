@@ -1,27 +1,13 @@
-# PiMech Robotics Motor Controller (RP2040 Pico)
+# PiMech UF2 Firmware Builds
 
-This is designed for the PiMech Motor Shield with an RP2040 Pico and recommended to pair with the PiMech Controller
+The UF2 files provided here are for users to quickly update their PiMech Boards to the latest firmware by simple drag-drop into the RP2040 Pico File System.
 
-### Software Features
-* 20x PWM Channels
-* PPM Keep Alive and Backup Controller
-* More to come...
-
-# Setup
-
-Check wiring diagram for board connections: [RP2040 Pico MotorShield](https://github.com/roy86/PiMech2040-Hardware/tree/main/RP2040-Pico-MotorShield)
+This firmware is designed for RP2040 based PiMech Hardware and should not be used outside of the specifically designed ecosystem.
 
 ## Installing Software on Pico
-There are two methods supplied here to upload the firmware to your PiMech MotorShield. The provided UF2 binarys which can be drag-drop or compile your own via the Arduino IDE.
 
-### 1. Loading the prebuilt UF2
+### Loading the prebuilt UF2
 Put your Pico into FS / bootloader mode by holding down the BOOTSEL button whilst plugging it into your PC - it should now show up as a drive called RPI-RP2. Once you've navigated to your chosen uf2 file, you can just drag it over to the RPI-RP2 drive on the left to copy it to your Pico - simples.
-
-### 2. Compiling and loading via Arduino IDE
-[Arduino IDE Setup](https://github.com/earlephilhower/arduino-pico#installing-via-arduino-boards-manager)
-
-[Uploading Sketches](https://github.com/earlephilhower/arduino-pico#uploading-sketches)
-
 
 # Licence
 
