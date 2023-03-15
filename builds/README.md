@@ -9,6 +9,11 @@ This firmware is designed for RP2040 based PiMech Hardware and should not be use
 ### Loading the prebuilt UF2
 Put your Pico into FS / bootloader mode by holding down the BOOTSEL button whilst plugging it into your PC - it should now show up as a drive called RPI-RP2. Once you've navigated to your chosen uf2 file, you can just drag it over to the RPI-RP2 drive on the left to copy it to your Pico - simples.
 
+## Setting up Configuration
+Please backup any existing configuration on the SD card to you computer and start with a clean card. The PiMech Firmware will create new config on the first bootup for you to merge with any exiting prior to adjusting the limits of your inputs and outputs.
+
+# BE VERY CAREFUL ON FIRST BOOT UP. BE READY TO SHUT OFF POWER TO MOTORS IN THE EVENT OF OVER LIMIT SERVOS OR MOTOR RUNAWAY
+
 # Licence
 
 MIT License
