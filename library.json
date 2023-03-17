@@ -24,7 +24,7 @@
   },
   "license": "MIT",
   "frameworks": "*",
-  "platforms": ["raspberrypi","raspberrypi_pico","raspberrypi_picow"],
+  "platforms": ["raspberrypi","raspberrypi_pico","raspberrypi_pico_w"],
   "examples": "examples/*/*/*.ino",
-  "headers": [""]
+  "headers": ["pimech_motorshield.hpp"]
 }
